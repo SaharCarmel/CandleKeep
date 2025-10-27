@@ -1,4 +1,8 @@
-# 🕯️ CandleKeep
+# CandleKeep
+
+<p align="center">
+  <img src="candlekeep-logo.png" alt="CandleKeep Logo" width="400"/>
+</p>
 
 > *A personal library that brings the wisdom of books to your AI agents*
 
@@ -35,28 +39,28 @@ CandleKeep is your personal knowledge infrastructure for AI agents. It's not jus
 
 ## Key Features
 
-### 📚 Book Management
+### Book Management
 - **Add books** from various formats (PDF, EPUB, text)
 - **Intelligent parsing** using docling and LLMs to extract structured content
 - **Organize** your library with custom categorization
 
-### ✍️ Rich Annotations
+### Rich Annotations
 - **Highlights** for important passages
 - **Bookmarks** for quick reference
 - **Notes** to capture your thoughts and insights
 - **Cross-references** to link ideas across different books
 
-### 🔗 Connection Mapping
+### Connection Mapping
 - Automatic tracking of which books and sections are accessed together
 - Session-based association to identify patterns in your knowledge usage
 - Emergent insight discovery from usage patterns
 
-### 🤖 Agent Integration
+### Agent Integration
 - **Claude Code plugin** for seamless integration
 - **Guided skills** that teach agents how to use your library effectively
 - **Contextual responses** shaped by your book collection
 
-### 📖 Agent-Written Books
+### Agent-Written Books
 - Create guides specifically designed for AI agents
 - Share coding methodologies, analytical frameworks, and domain expertise
 - Build a new medium for human-to-human knowledge transfer
@@ -114,7 +118,7 @@ CandleKeep is built as a local-first system with a clean separation of concerns:
 
 ## Use Cases
 
-### 📈 Personalized Financial Advice
+### Personalized Financial Advice
 - **Scenario**: You ask an agent for investment strategy advice
 - **Without CandleKeep**: Generic advice based on common knowledge
 - **With CandleKeep**:
@@ -122,7 +126,7 @@ CandleKeep is built as a local-first system with a clean separation of concerns:
   - Crypto trading library → Advice on DeFi, yield farming, volatility strategies
   - Options trading library → Advice on hedging, spreads, risk management
 
-### 💻 Coding Methodology Transfer
+### Coding Methodology Transfer
 - **Scenario**: A senior developer shares their agentic coding approach
 - **Process**:
   1. Write an "agent book" documenting TDD with AI pair programming techniques
@@ -130,7 +134,7 @@ CandleKeep is built as a local-first system with a clean separation of concerns:
   3. Their agents now code using the senior developer's proven patterns
 - **Result**: Institutional knowledge transferred at scale
 
-### 🔬 Research & Cross-Referencing
+### Research & Cross-Referencing
 - **Scenario**: Writing a paper on distributed systems
 - **Workflow**: Reference *Designing Data-Intensive Applications*, *The Art of Scalability*, and various research papers
 - **CandleKeep Advantage**:
@@ -138,7 +142,7 @@ CandleKeep is built as a local-first system with a clean separation of concerns:
   - Connection tracking shows which concepts you consistently link
   - Emerging patterns suggest novel connections you might explore
 
-### 📚 Domain Expertise Building
+### Domain Expertise Building
 - **Scenario**: Learning machine learning with agent assistance
 - **Progression**:
   1. Add foundational texts (*Pattern Recognition*, *Deep Learning*)
@@ -146,80 +150,9 @@ CandleKeep is built as a local-first system with a clean separation of concerns:
   3. Your agent's responses evolve with your library
   4. Session tracking shows your learning path and knowledge gaps
 
-## Getting Started
-
-> **Note**: CandleKeep is in early development. This section will be updated as the MVP is released.
-
-### Installation
-
-```bash
-# Installation instructions coming soon
-pip install candlekeep
-```
-
-### Quick Start
-
-```bash
-# Add your first book
-candlekeep add-book "path/to/book.pdf"
-
-# Parse and structure the content
-candlekeep parse --book-id 1
-
-# Add a highlight
-candlekeep highlight --book-id 1 --page 42 --text "Important concept"
-
-# Search your library
-candlekeep query "machine learning optimization"
-
-# View connection patterns
-candlekeep connections --book-id 1
-```
-
-### Claude Code Integration
-
-```bash
-# Install the MCP plugin
-candlekeep install-plugin --target claude-code
-
-# The skill will be automatically available in Claude Code
-# Use: "Reference my library on [topic]"
-```
-
-## Vision & Roadmap
-
-### Current Focus (MVP)
-- ✅ Local CLI tool with core commands
-- ✅ MySQL database for storage
-- ✅ Basic book parsing with docling
-- ✅ Highlight and bookmark functionality
-- ✅ Claude Code plugin and skill
-- ✅ Session tracking infrastructure
-
-### Near-Term Goals
-- 📊 Visual connection graphs
-- 🧠 Advanced pattern analysis and insight generation
-- 📱 Web interface for library management
-- 🔍 Enhanced search with semantic understanding
-- 📤 Export/import library configurations
-
-### Long-Term Vision
-- 🌐 Optional cloud sync while maintaining local-first philosophy
-- 👥 Collaborative knowledge bases for teams
-- 🏪 Marketplace for agent-optimized books
-- 🤝 Integration with other agent frameworks (beyond Claude)
-- 🔬 Research insights: studying how different people derive different insights from identical collections
-- 🎓 Educational applications: tracking learning patterns through knowledge access
-
-### The Bigger Picture
-
-CandleKeep is part of a shift in how we think about AI agents and knowledge. Just as the printing press democratized access to books, and the internet democratized access to information, we believe agent-accessible personal libraries will democratize access to personalized expertise.
-
-**The hypothesis**: If human actions are determined by the knowledge they possess, then giving agents access to personalized, curated, and actively-used knowledge creates fundamentally different—and better—AI assistance.
-
 ## Project Status
 
-🚧 **Early Development** - CandleKeep is currently in active development. The architecture is being refined, and the MVP features are being implemented. We welcome feedback, ideas, and contributions.
+**Early Development** - CandleKeep is currently in active development. The architecture is being refined, and the MVP features are being implemented. We welcome feedback, ideas, and contributions.
 
 ### Contributing
 
