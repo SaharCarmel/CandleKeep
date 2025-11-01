@@ -279,7 +279,7 @@ candlekeep/
 
 ## Progress Tracking
 
-**Overall Status:** Phase 1 Complete - 20% Complete (Foundation)
+**Overall Status:** Phase 2 Complete - 40% Complete (Foundation + PDF Processing)
 
 ### Subtasks
 | ID | Description | Status | Updated | Notes |
@@ -291,20 +291,20 @@ candlekeep/
 | 1.5 | Set up Alembic migrations | Complete | 2025-11-01 | Initial migration created and tested |
 | 1.6 | Implement init command | Complete | 2025-11-01 | Zero-config initialization with Rich UI |
 | 1.7 | Test init command | Complete | 2025-11-01 | E2E test passed - all features verified |
-| 2.1 | Implement SHA256 hashing | Not Started | 2025-11-01 | File deduplication |
-| 2.2 | Implement PDF metadata extraction | Not Started | 2025-11-01 | PyMuPDF extraction |
-| 2.3 | Implement PDF to markdown conversion | Not Started | 2025-11-01 | pymupdf4llm |
-| 2.4 | Implement word/chapter counting | Not Started | 2025-11-01 | Content metrics |
-| 2.5 | Implement filename parsing | Not Started | 2025-11-01 | Fallback extraction |
-| 2.6 | Create PDF parser module | Not Started | 2025-11-01 | Complete integration |
-| 2.7 | Test PDF parsing | Not Started | 2025-11-01 | E2E test |
+| 2.1 | Implement SHA256 hashing | Complete | 2025-11-01 | utils/hash_utils.py with SHA256 file hashing |
+| 2.2 | Implement PDF metadata extraction | Complete | 2025-11-01 | PyMuPDF extraction with TOC support (192 chapters) |
+| 2.3 | Implement PDF to markdown conversion | Complete | 2025-11-01 | pymupdf4llm with page markers innovation |
+| 2.4 | Implement word/chapter counting | Complete | 2025-11-01 | Content metrics calculation (82K words, 192 chapters) |
+| 2.5 | Implement filename parsing | Complete | 2025-11-01 | Fallback extraction in file_utils.py |
+| 2.6 | Create PDF parser module | Complete | 2025-11-01 | parsers/pdf.py with complete integration |
+| 2.7 | Test PDF parsing | Complete | 2025-11-01 | E2E tests 2 & 4 passed + page extraction validated |
 | 3.1 | Implement frontmatter parsing | Not Started | 2025-11-01 | python-frontmatter |
 | 3.2 | Implement heading extraction | Not Started | 2025-11-01 | Fallback method |
 | 3.3 | Implement word/heading counting | Not Started | 2025-11-01 | Content metrics |
 | 3.4 | Implement filename parsing | Not Started | 2025-11-01 | Fallback extraction |
 | 3.5 | Create markdown parser module | Not Started | 2025-11-01 | Complete integration |
 | 3.6 | Test markdown parsing | Not Started | 2025-11-01 | E2E test |
-| 4.1 | Implement add-pdf command | Not Started | 2025-11-01 | Full workflow |
+| 4.1 | Implement add-pdf command | Complete | 2025-11-01 | commands/add.py with progress indicators & rich output |
 | 4.2 | Implement add-md command | Not Started | 2025-11-01 | Full workflow |
 | 4.3 | Test add commands | Not Started | 2025-11-01 | E2E test |
 | 5.1 | Implement list command | Not Started | 2025-11-01 | With filters and formats |
@@ -316,7 +316,7 @@ candlekeep/
 | 6.2 | Implement remove command | Not Started | 2025-11-01 | With confirmation |
 | 6.3 | Test management commands | Not Started | 2025-11-01 | E2E test |
 | 7.1 | Add error handling | Not Started | 2025-11-01 | Comprehensive coverage |
-| 7.2 | Add progress indicators | Not Started | 2025-11-01 | For long operations |
+| 7.2 | Add progress indicators | Complete | 2025-11-01 | Implemented for PDF parsing operations |
 | 7.3 | Add confirmation prompts | Not Started | 2025-11-01 | Destructive operations |
 | 7.4 | Improve Rich formatting | Not Started | 2025-11-01 | Consistency |
 | 7.5 | Add helpful error messages | Not Started | 2025-11-01 | With suggestions |
@@ -715,9 +715,9 @@ candlekeep add-pdf "~/My Books/Clean Code - Robert C. Martin (2008).pdf"
 Before marking task as complete, ALL tests must pass:
 
 - [x] Test 1: Initial Setup ✓ **PASSED** (Phase 1)
-- [ ] Test 2: Add PDF Book ✓ (Phase 2)
+- [x] Test 2: Add PDF Book ✓ **PASSED** (Phase 2)
 - [ ] Test 3: Add Markdown Book ✓ (Phase 3)
-- [ ] Test 4: Duplicate Detection ✓ (Phase 2)
+- [x] Test 4: Duplicate Detection ✓ **PASSED** (Phase 2)
 - [ ] Test 5: List Books ✓ (Phase 5)
 - [ ] Test 6: Show Book Details ✓ (Phase 5)
 - [ ] Test 7: Search Books ✓ (Phase 5)
@@ -826,3 +826,85 @@ echo "y" | candlekeep init
 - [x] Code committed and PR created
 
 **Next: Phase 2 - PDF Processing**
+
+---
+
+### 2025-11-01 - Phase 2 Complete ✅
+
+**Implementation:**
+- ✅ Implemented SHA256 hashing utility (utils/hash_utils.py)
+- ✅ Implemented PDF metadata extraction with PyMuPDF (parsers/pdf.py)
+- ✅ Implemented PDF to markdown conversion with **page markers** (pymupdf4llm)
+- ✅ Implemented word/chapter counting utilities
+- ✅ Implemented filename parsing fallback (utils/file_utils.py)
+- ✅ Created content extraction utilities (utils/content_utils.py)
+- ✅ Implemented `candlekeep add-pdf` command (commands/add.py)
+- ✅ Added table_of_contents JSON field to Book model
+- ✅ Created migration: 350115ea15b8_add_table_of_contents_field.py
+
+**Innovation - Page Markers:**
+- PDFs now converted with page separators: `--- end of page=N ---`
+- Enables surgical content extraction by page range
+- AI agents can query TOC and extract precise sections
+- Example: Extract pages 41-44 (1,290 words) instead of searching 82,835 words
+
+**End-to-End Testing Completed:**
+
+✅ **Test 2: Add PDF Book**
+```bash
+uv run candlekeep add-pdf ~/Downloads/volos-guide-to-monsters.pdf
+# Result: SUCCESS
+# - Title: "Volo's Guide to Monsters"
+# - Pages: 226
+# - Words: 82,835
+# - Chapters: 192 TOC entries with hierarchy
+# - Markdown file: ~/.candlekeep/library/volos-guide-to-monsters.md
+# - Database record created with all metadata
+# - TOC stored as JSON in database
+# - Page markers inserted correctly (226 pages)
+```
+
+✅ **Test 4: Duplicate Detection**
+```bash
+uv run candlekeep add-pdf ~/Downloads/volos-guide-to-monsters.pdf
+# Result: SUCCESS
+# Error message: "Book already exists: Volo's Guide to Monsters (ID: 1)"
+# - SHA256 hash correctly identifies duplicate
+# - No database changes
+# - No file creation
+```
+
+✅ **Page Extraction Test (Content Utils)**
+```python
+# Query: "Tell me about goblins"
+# Search TOC for "Goblins" → Found at index 17, page 41
+# Next TOC entry at page 45 → Extract pages 41-44
+# Result: 7,742 characters (~1,290 words) of precise content
+# Extraction time: <50ms using regex
+```
+
+**Architecture Enhancement:**
+- Table of Contents now stored in database as JSON
+- Enables AI agents to query TOC without reading markdown files
+- Page markers enable O(1) content extraction via regex
+- Duplicate detection prevents re-adding books via SHA256 hash
+
+**Files Created:** 7 new files, 797 lines of code
+**Branch:** feature/phase-2-pdf-processing-with-page-markers
+**Commit:** 4ef00b9
+**Pull Request:** #2 - https://github.com/SaharCarmel/CandleKeep/pull/2
+
+**Phase 2 Completion Criteria Met:**
+- [x] SHA256 hashing implemented and tested
+- [x] PDF metadata extraction working (title, author, TOC, etc.)
+- [x] PDF to markdown conversion with page markers
+- [x] Word and chapter counting accurate
+- [x] Filename parsing fallback functional
+- [x] Complete PDF parser module integrated
+- [x] E2E tests 2 & 4 passed
+- [x] add-pdf command implemented with rich UI
+- [x] Progress indicators for long operations
+- [x] Duplicate detection working
+- [x] Code committed and PR created
+
+**Next: Phase 3 - Markdown Processing**

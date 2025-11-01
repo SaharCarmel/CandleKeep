@@ -102,13 +102,14 @@ class Config:
         """Check if CandleKeep is initialized.
 
         Returns:
-            True if configuration exists and directories are set up
+            True if directories are set up and database exists
         """
+        db_path = self.config_dir / "candlekeep.db"
         return (
-            self.exists()
-            and self.config_dir.exists()
+            self.config_dir.exists()
             and self.library_dir.exists()
             and self.originals_dir.exists()
+            and db_path.exists()
         )
 
 

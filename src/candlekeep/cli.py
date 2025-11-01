@@ -4,6 +4,7 @@ import typer
 from rich.console import Console
 
 from .commands.init import init_command
+from .commands.add import add_pdf
 
 app = typer.Typer(
     name="candlekeep",
@@ -18,6 +19,10 @@ console = Console()
 def init():
     """Initialize CandleKeep configuration and database."""
     init_command()
+
+
+# Register add-pdf command
+app.command(name="add-pdf")(add_pdf)
 
 
 @app.callback()
