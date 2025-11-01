@@ -74,6 +74,7 @@ class Book(Base):
     page_count = Column(Integer)
     word_count = Column(Integer)
     chapter_count = Column(Integer)
+    table_of_contents = Column(JSON)  # List of TOC entries with level, title, page
 
     # Categorization
     subject = Column(String(500))
