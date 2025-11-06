@@ -279,7 +279,7 @@ candlekeep/
 
 ## Progress Tracking
 
-**Overall Status:** Phase 2 Complete - 40% Complete (Foundation + PDF Processing)
+**Overall Status:** Phase 3 Complete - 60% Complete (Foundation + PDF + Markdown Processing)
 
 ### Subtasks
 | ID | Description | Status | Updated | Notes |
@@ -298,15 +298,15 @@ candlekeep/
 | 2.5 | Implement filename parsing | Complete | 2025-11-01 | Fallback extraction in file_utils.py |
 | 2.6 | Create PDF parser module | Complete | 2025-11-01 | parsers/pdf.py with complete integration |
 | 2.7 | Test PDF parsing | Complete | 2025-11-01 | E2E tests 2 & 4 passed + page extraction validated |
-| 3.1 | Implement frontmatter parsing | Not Started | 2025-11-01 | python-frontmatter |
-| 3.2 | Implement heading extraction | Not Started | 2025-11-01 | Fallback method |
-| 3.3 | Implement word/heading counting | Not Started | 2025-11-01 | Content metrics |
-| 3.4 | Implement filename parsing | Not Started | 2025-11-01 | Fallback extraction |
-| 3.5 | Create markdown parser module | Not Started | 2025-11-01 | Complete integration |
-| 3.6 | Test markdown parsing | Not Started | 2025-11-01 | E2E test |
+| 3.1 | Implement frontmatter parsing | Complete | 2025-11-06 | python-frontmatter with YAML extraction |
+| 3.2 | Implement heading extraction | Complete | 2025-11-06 | Fallback to first # heading |
+| 3.3 | Implement word/heading counting | Complete | 2025-11-06 | Word counting from clean text |
+| 3.4 | Implement filename parsing | Complete | 2025-11-06 | Reuses utils/file_utils.py |
+| 3.5 | Create markdown parser module | Complete | 2025-11-06 | parsers/markdown.py with full integration |
+| 3.6 | Test markdown parsing | Complete | 2025-11-06 | E2E Test 3 passed + edge cases |
 | 4.1 | Implement add-pdf command | Complete | 2025-11-01 | commands/add.py with progress indicators & rich output |
-| 4.2 | Implement add-md command | Not Started | 2025-11-01 | Full workflow |
-| 4.3 | Test add commands | Not Started | 2025-11-01 | E2E test |
+| 4.2 | Implement add-md command | Complete | 2025-11-06 | Full workflow with frontmatter support |
+| 4.3 | Test add commands | Complete | 2025-11-06 | Both add-pdf and add-md tested |
 | 5.1 | Implement list command | Not Started | 2025-11-01 | With filters and formats |
 | 5.2 | Implement show command | Not Started | 2025-11-01 | Rich formatting |
 | 5.3 | Implement search command | Not Started | 2025-11-01 | Full-text search |
@@ -716,7 +716,7 @@ Before marking task as complete, ALL tests must pass:
 
 - [x] Test 1: Initial Setup ✓ **PASSED** (Phase 1)
 - [x] Test 2: Add PDF Book ✓ **PASSED** (Phase 2)
-- [ ] Test 3: Add Markdown Book ✓ (Phase 3)
+- [x] Test 3: Add Markdown Book ✓ **PASSED** (Phase 3)
 - [x] Test 4: Duplicate Detection ✓ **PASSED** (Phase 2)
 - [ ] Test 5: List Books ✓ (Phase 5)
 - [ ] Test 6: Show Book Details ✓ (Phase 5)
@@ -908,3 +908,67 @@ uv run candlekeep add-pdf ~/Downloads/volos-guide-to-monsters.pdf
 - [x] Code committed and PR created
 
 **Next: Phase 3 - Markdown Processing**
+
+---
+
+### 2025-11-06 - Phase 3 Complete ✅
+
+**Implementation:**
+- ✅ Implemented YAML frontmatter parsing (python-frontmatter library)
+- ✅ Implemented first heading extraction fallback
+- ✅ Implemented word counting for markdown
+- ✅ Reused filename parsing from utils/file_utils.py
+- ✅ Created complete markdown parser module (parsers/markdown.py)
+- ✅ Implemented `candlekeep add-md` command (commands/add.py)
+- ✅ Progress indicators matching add-pdf command
+
+**Metadata Extraction Strategy:**
+1. **YAML Frontmatter** (priority 1): title, author, subject, keywords, category, tags, isbn, publisher, publication_year, language
+2. **First Heading** (fallback for title): Extract from first `#` heading
+3. **Filename Parsing** (fallback): Uses existing parse_filename_metadata()
+4. **TOC Generation**: From frontmatter OR generated from markdown headings (##, ###, etc.)
+
+**End-to-End Testing Completed:**
+
+✅ **Test 3: Add Markdown Book**
+```bash
+uv run candlekeep add-md ~/test-book.md
+# Result: SUCCESS
+# - Title: "My Coding Philosophy" (from frontmatter)
+# - Author: "Sahar Carmel" (from frontmatter)
+# - Category: "Technical Writing" (from frontmatter)
+# - Tags: ["coding", "philosophy", "practices"] (from frontmatter)
+# - Words: 99
+# - Chapters: 2 (from ## headings)
+# - Markdown file: ~/.candlekeep/library/my-coding-philosophy.md
+# - Database record created with all metadata
+```
+
+✅ **Edge Case Testing:**
+- **Without Frontmatter**: Title extracted from first `#` heading ✓
+- **With Special Characters**: Works with proper YAML quoting (colons require quotes) ✓
+- **Minimal Metadata**: Fallback strategies working correctly ✓
+
+**Architecture Consistency:**
+- Markdown parser follows same pattern as PDF parser (context manager)
+- Same metadata dictionary structure for consistency
+- TOC format matches PDF parser (level, title, page)
+- Same Rich UI formatting for success messages
+- Tags stored as JSON list in database (both formats)
+
+**Files Verified:** parsers/markdown.py (331 lines), commands/add.py includes add-md
+**Branch:** feature/phase-3-markdown-processing-with-toc
+**Commit:** 39e31ba
+
+**Phase 3 Completion Criteria Met:**
+- [x] Frontmatter parsing implemented and tested
+- [x] Heading extraction fallback working
+- [x] Word counting accurate
+- [x] Filename parsing reused from utils
+- [x] Complete markdown parser module
+- [x] E2E Test 3 passed
+- [x] add-md command functional with rich UI
+- [x] Edge cases tested (no frontmatter, special chars)
+- [x] Progress tracking updated
+
+**Next: Phase 5 - Query Commands** (Phase 4 is complete with add-pdf and add-md)
