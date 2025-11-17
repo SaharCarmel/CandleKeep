@@ -1,0 +1,54 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "candlekeep-marketplace",
+  "version": "1.0.0",
+  "description": "Personal knowledge base and D&D tools for Claude Code",
+  "owner": {
+    "name": "Sahar Carmel",
+    "email": "sahar@example.com"
+  },
+  "plugins": [
+    {
+      "name": "candlekeep",
+      "description": "Personal knowledge base system that gives AI agents direct access to your books",
+      "version": "0.1.0",
+      "author": {
+        "name": "Sahar Carmel",
+        "email": "sahar@example.com"
+      },
+      "source": "./plugins/candlekeep",
+      "category": "productivity",
+      "license": "MIT",
+      "keywords": [
+        "knowledge-base",
+        "books",
+        "library",
+        "search",
+        "documentation",
+        "pdf",
+        "markdown"
+      ],
+      "homepage": "https://github.com/SaharCarmel/CandleKeep"
+    },
+    {
+      "name": "dnd-dm",
+      "description": "Complete D&D Dungeon Master assistant with campaign management, dice rolling, and AI-powered NPC voices using ElevenLabs",
+      "version": "0.1.0",
+      "author": {
+        "name": "Sahar Carmel",
+        "email": "sahar@example.com"
+      },
+      "source": "./plugins/dnd-dm",
+      "category": "entertainment",
+      "license": "MIT",
+      "keywords": [
+        "dnd",
+        "dungeons-dragons",
+        "rpg",
+        "dungeon-master",
+        "tts",
+        "game-master"
+      ]
+    }
+  ]
+}

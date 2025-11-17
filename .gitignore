@@ -37,5 +37,20 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Project specific
-candlekeep/
+# CandleKeep user data (local library storage)
+.candlekeep/
+
+# Node.js (for DND-DM plugin)
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# DND-DM campaign data (user-specific)
+plugins/dnd-dm/skills/dnd-dm/sessions/
+plugins/dnd-dm/skills/dnd-dm/.env
+
+# NPC Voice API keys
+plugins/dnd-dm/skills/npc-voice/.env
+
+# Logs
+*.log
