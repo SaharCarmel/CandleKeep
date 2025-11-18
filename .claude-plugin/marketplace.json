@@ -1,0 +1,32 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "candlekeep",
+  "version": "1.0.0",
+  "description": "CandleKeep marketplace - knowledge base tools and plugins for AI agents",
+  "owner": {
+    "name": "Sahar Carmel",
+    "email": "sahar@example.com"
+  },
+  "plugins": [
+    {
+      "name": "candlekeep-cli",
+      "description": "Personal knowledge base CLI that gives AI agents direct access to your books and annotations",
+      "version": "0.1.0",
+      "author": {
+        "name": "Sahar Carmel",
+        "email": "sahar@example.com"
+      },
+      "source": "./plugins/candlekeep-cli",
+      "category": "productivity",
+      "keywords": [
+        "knowledge-base",
+        "books",
+        "library",
+        "search",
+        "annotations",
+        "pdf",
+        "epub"
+      ]
+    }
+  ]
+}

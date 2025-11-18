@@ -7,13 +7,9 @@
 > *A personal library that brings the wisdom of books to your AI agents*
 
 [![Status](https://img.shields.io/badge/status-early%20development-orange)]()
-[![License](https://img.shields.io/badge/license-MIT-blue)]()
-
-## What is this?
+[![License](https://img.shields.io/badge/license-TBD-lightgrey)]()
 
 CandleKeep is a knowledge base system that gives AI agents direct access to your books—not just their memories of them. Like the legendary library fortress it's named after, CandleKeep preserves and provides knowledge, but for the age of artificial intelligence.
-
-This repository serves as both the home of the CandleKeep project and a [Claude Code plugin marketplace](https://code.claude.com/docs/en/plugin-marketplaces) for distributing CandleKeep and related knowledge infrastructure tools.
 
 ---
 
@@ -64,15 +60,61 @@ CandleKeep is your personal knowledge infrastructure for AI agents. It's not jus
 - **Guided skills** that teach agents how to use your library effectively
 - **Contextual responses** shaped by your book collection
 
-## Available Plugins
+### Agent-Written Books
+- Create guides specifically designed for AI agents
+- Share coding methodologies, analytical frameworks, and domain expertise
+- Build a new medium for human-to-human knowledge transfer
 
-### candlekeep-cli
+## Architecture
 
-The core CandleKeep CLI provides a Python-based command-line interface for managing your personal knowledge base, with MySQL storage and Claude Code integration.
+CandleKeep is built as a local-first system with a clean separation of concerns:
 
-[See full documentation →](./plugins/candlekeep-cli/README.md)
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Claude Code                            │
+│  ┌──────────────────┐          ┌──────────────────┐        │
+│  │  Plugin          │          │  Skill           │        │
+│  │  (Tool Access)   │◄────────►│  (Usage Guide)   │        │
+│  └────────┬─────────┘          └──────────────────┘        │
+└───────────┼─────────────────────────────────────────────────┘
+            │
+            │ IPC / Local API
+            │
+┌───────────▼─────────────────────────────────────────────────┐
+│                   CandleKeep CLI                            │
+│  ┌─────────────────────────────────────────────────┐       │
+│  │  Commands                                        │       │
+│  │  • add-book      • parse      • highlight        │       │
+│  │  • bookmark      • note       • connect          │       │
+│  │  • search        • query      • session-track    │       │
+│  └─────────────────────────────────────────────────┘       │
+└───────────┬─────────────────────────────────────────────────┘
+            │
+            │
+┌───────────▼─────────────────────────────────────────────────┐
+│                MySQL Database (Local)                       │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
+│  │  Books   │  │  Content │  │ Sessions │  │  Graphs  │   │
+│  │  Metadata│  │  Chunks  │  │  Access  │  │  Connect │   │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
 
----
+### Technology Stack
+
+- **CLI Tool**: Python-based command-line interface for all operations
+- **Parser**: Docling + LLM-powered content extraction and structuring
+- **Storage**: MySQL database for books, annotations, and connection graphs
+- **Integration**: Claude Code MCP plugin + skill for agent guidance
+- **Session Tracking**: Activity logging for pattern analysis and insight generation
+
+### How It Works
+
+1. **Add a Book**: Import books in various formats; CandleKeep parses and structures the content
+2. **Annotate & Connect**: As you work, add highlights, notes, and cross-references
+3. **Agent Access**: Your AI agents can query the library, receiving context from your books
+4. **Pattern Learning**: The system tracks which books/sections are accessed together during sessions
+5. **Insight Emergence**: Over time, connection patterns reveal unique insights from your knowledge usage
 
 ## Use Cases
 
@@ -108,44 +150,6 @@ The core CandleKeep CLI provides a Python-based command-line interface for manag
   3. Your agent's responses evolve with your library
   4. Session tracking shows your learning path and knowledge gaps
 
----
-
-## Using this Marketplace
-
-To use CandleKeep plugins in your Claude Code projects:
-
-**Add the marketplace (one-liner in Claude Code):**
-```
-/plugin marketplace add SaharCarmel/candlekeep
-```
-
-**Install plugins:**
-```
-/plugin install candlekeep-cli@candlekeep
-```
-
-Or browse all available plugins interactively:
-```
-/plugin
-```
-
-## Marketplace Information
-
-This repository follows the [Claude Code marketplace structure](https://code.claude.com/docs/en/plugin-marketplaces). The catalog is defined in `.claude-plugin/marketplace.json`.
-
-**Adding plugins:** Use `./scripts/add-plugin.sh` or edit the marketplace.json manually
-**Validation:** Run `./scripts/validate.sh` to check configuration
-
-Check `.claude-plugin/marketplace.json` for the complete plugin catalog.
-
----
-
-## Why "CandleKeep"?
-
-In Dungeons & Dragons lore, Candlekeep is a fortress library dedicated to the collection and preservation of knowledge. It's a place where seekers of wisdom come to learn, researchers come to discover, and knowledge is treated as sacred. Our CandleKeep aspires to the same principle: creating a sanctuary for knowledge in the age of artificial intelligence, where wisdom isn't just stored—it's actively used, connected, and amplified.
-
----
-
 ## Project Status
 
 **Early Development** - CandleKeep is currently in active development. The architecture is being refined, and the MVP features are being implemented. We welcome feedback, ideas, and contributions.
@@ -158,7 +162,13 @@ Interested in contributing? While we're still in early stages, we'd love to hear
 - Power users of AI coding assistants
 - Anyone passionate about books and AI
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+Stay tuned for contribution guidelines as the project matures.
+
+---
+
+## Why "CandleKeep"?
+
+In Dungeons & Dragons lore, Candlekeep is a fortress library dedicated to the collection and preservation of knowledge. It's a place where seekers of wisdom come to learn, researchers come to discover, and knowledge is treated as sacred. Our CandleKeep aspires to the same principle: creating a sanctuary for knowledge in the age of artificial intelligence, where wisdom isn't just stored—it's actively used, connected, and amplified.
 
 ---
 

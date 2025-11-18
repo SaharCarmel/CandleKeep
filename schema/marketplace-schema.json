@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Claude Code Marketplace Schema",
+  "description": "Schema for validating Claude Code plugin marketplace configuration",
+  "type": "object",
+  "required": ["name", "owner", "plugins"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Kebab-case identifier for the marketplace"
+    },
+    "owner": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Marketplace maintainer name"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Maintainer email address"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Marketplace overview"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version"
+        },
+        "pluginRoot": {
+          "type": "string",
+          "description": "Base path for relative plugin sources"
+        }
+      }
+    },
+    "plugins": {
+      "type": "array",
+      "description": "Array of plugin definitions",
+      "items": {
+        "type": "object",
+        "required": ["name", "source"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$",
+            "description": "Kebab-case plugin identifier"
+          },
+          "description": {
+            "type": "string",
+            "description": "What the plugin does"
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "description": "Plugin version"
+          },
+          "author": {
+            "type": "string",
+            "description": "Plugin author name"
+          },
+          "homepage": {
+            "type": "string",
+            "format": "uri",
+            "description": "Plugin homepage URL"
+          },
+          "license": {
+            "type": "string",
+            "description": "Plugin license (e.g., MIT, Apache-2.0)"
+          },
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Search keywords"
+          },
+          "source": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Relative path to plugin"
+              },
+              {
+                "type": "object",
+                "required": ["type"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["github", "url"],
+                    "description": "Source type"
+                  },
+                  "repo": {
+                    "type": "string",
+                    "pattern": "^[^/]+/[^/]+$",
+                    "description": "GitHub repository (owner/repo)"
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Git repository URL"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

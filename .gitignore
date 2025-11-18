@@ -38,4 +38,14 @@ ENV/
 Thumbs.db
 
 # Project specific
-candlekeep/
+# (Python packages in plugins are tracked)
+
+# Marketplace
+.DS_Store
+*.log
+
+# Plugin-specific ignores
+plugins/*/.venv/
+plugins/*/venv/
+plugins/*/build/
+plugins/*/dist/

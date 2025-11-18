@@ -1,0 +1,23 @@
+{
+  "name": "candlekeep-cli",
+  "version": "0.1.0",
+  "description": "Personal knowledge base CLI that gives AI agents direct access to your books and annotations",
+  "author": {
+    "name": "Sahar Carmel",
+    "email": "sahar@example.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "knowledge-base",
+    "books",
+    "library",
+    "search",
+    "annotations",
+    "pdf",
+    "epub",
+    "docling",
+    "mysql"
+  ],
+  "homepage": "https://github.com/saharcarmel/candlekeep",
+  "repository": "https://github.com/saharcarmel/candlekeep"
+}
