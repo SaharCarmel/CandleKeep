@@ -1,0 +1,25 @@
+{
+  "name": "dnd-dm",
+  "version": "0.1.0",
+  "description": "Complete D&D Dungeon Master assistant with campaign management, dice rolling, and AI-powered NPC voices using ElevenLabs",
+  "author": {
+    "name": "Sahar Carmel",
+    "email": "sahar@example.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "dungeons-and-dragons",
+    "dnd",
+    "dungeon-master",
+    "roleplaying",
+    "rpg",
+    "campaign",
+    "dice",
+    "npc",
+    "voice",
+    "elevenlabs",
+    "tts"
+  ],
+  "homepage": "https://github.com/saharcarmel/dnd-dm-plugin",
+  "repository": "https://github.com/saharcarmel/dnd-dm-plugin"
+}
