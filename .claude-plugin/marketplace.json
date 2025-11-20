@@ -27,6 +27,30 @@
         "pdf",
         "epub"
       ]
+    },
+    {
+      "name": "dnd-dm",
+      "description": "Complete D&D Dungeon Master assistant with campaign management, dice rolling, and AI-powered NPC voices using ElevenLabs",
+      "version": "0.1.0",
+      "author": {
+        "name": "Sahar Carmel",
+        "email": "sahar@example.com"
+      },
+      "source": "./plugins/dnd-dm",
+      "category": "entertainment",
+      "keywords": [
+        "dungeons-and-dragons",
+        "dnd",
+        "dungeon-master",
+        "roleplaying",
+        "rpg",
+        "campaign",
+        "dice",
+        "npc",
+        "voice",
+        "elevenlabs",
+        "tts"
+      ]
     }
   ]
 }

@@ -72,6 +72,12 @@ The core CandleKeep CLI provides a Python-based command-line interface for manag
 
 [See full documentation →](./plugins/candlekeep-cli/README.md)
 
+### dnd-dm
+
+A comprehensive D&D 5e Dungeon Master assistant that provides immersive gameplay features including campaign management, dice rolling, adventure book integration with CandleKeep, and AI-powered NPC voices using ElevenLabs.
+
+[See full documentation →](./plugins/dnd-dm/README.md)
+
 ---
 
 ## Use Cases
@@ -122,6 +128,7 @@ To use CandleKeep plugins in your Claude Code projects:
 **Install plugins:**
 ```
 /plugin install candlekeep-cli@candlekeep
+/plugin install dnd-dm@candlekeep
 ```
 
 Or browse all available plugins interactively:
