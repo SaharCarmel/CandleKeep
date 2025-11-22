@@ -20,6 +20,7 @@ class Config:
         self.config_file = self.config_dir / "config.yaml"
         self.library_dir = self.config_dir / "library"
         self.originals_dir = self.config_dir / "originals"
+        self.images_dir = self.config_dir / "images"
         self._config_data: Optional[Dict[str, Any]] = None
 
     def exists(self) -> bool:
@@ -96,6 +97,7 @@ class Config:
         self.config_dir.mkdir(parents=True, exist_ok=True)
         self.library_dir.mkdir(parents=True, exist_ok=True)
         self.originals_dir.mkdir(parents=True, exist_ok=True)
+        self.images_dir.mkdir(parents=True, exist_ok=True)
 
     @property
     def is_initialized(self) -> bool:

@@ -11,16 +11,111 @@ from rich.panel import Panel
 from rich.table import Table
 from sqlalchemy.exc import IntegrityError
 
-from ..db.models import Book, SourceType
+from ..db.models import Book, BookImage, SourceType
 from ..db.session import get_db_manager
-from ..parsers.pdf import parse_pdf
+from ..parsers.pdf import parse_pdf, PDFParser
 from ..parsers.markdown import parse_markdown
 from ..utils.config import get_config
 from ..utils.file_utils import sanitize_filename, ensure_directory, get_unique_filename
 from ..utils.hash_utils import compute_file_hash
+from ..utils.image_utils import create_book_image_directory, generate_image_filename
 
 console = Console()
 app = typer.Typer()
+
+
+def _process_and_save_images(
+    book_id: int,
+    pdf_path: Path,
+    markdown_path: Path,
+    progress_task_id=None,
+    progress_obj=None
+) -> tuple[int, str]:
+    """
+    Extract images from PDF, save them, create database records, and update markdown.
+
+    Args:
+        book_id: ID of the book
+        pdf_path: Path to the original PDF
+        markdown_path: Path to the saved markdown file
+        progress_task_id: Optional progress task ID for status updates
+        progress_obj: Optional progress object for status updates
+
+    Returns:
+        Tuple of (image_count, updated_markdown_content)
+    """
+    try:
+        config = get_config()
+
+        # Create image directory for this book
+        image_dir = create_book_image_directory(book_id)
+
+        # Extract images using PDFParser with image extraction enabled
+        with PDFParser(pdf_path) as parser:
+            # Convert to markdown with image extraction
+            markdown_with_images = parser.convert_to_markdown(
+                extract_images=True,
+                image_path=image_dir,
+                dpi=150,
+                size_limit=0.05
+            )
+
+            # Extract image metadata
+            images_metadata = parser.extract_image_metadata()
+
+        # Convert relative image paths to absolute in markdown
+        markdown_absolute = PDFParser.convert_image_paths_to_absolute(
+            markdown_with_images,
+            book_id,
+            image_dir
+        )
+
+        # Create BookImage database records
+        db_manager = get_db_manager()
+        image_count = 0
+
+        with db_manager.get_session() as session:
+            for img_meta in images_metadata:
+                # Generate filename for this image
+                filename = generate_image_filename(
+                    page=img_meta['page_number'],
+                    index=image_count,  # Use sequential index
+                    format=img_meta['format']
+                )
+
+                # Create BookImage record
+                book_image = BookImage(
+                    book_id=book_id,
+                    page_number=img_meta['page_number'],
+                    printed_page_number=img_meta.get('printed_page_number'),  # May be None
+                    xref=img_meta['xref'],
+                    file_path=str(image_dir / filename),
+                    width=img_meta['width'],
+                    height=img_meta['height'],
+                    format=img_meta['format'],
+                    colorspace=img_meta.get('colorspace'),
+                    has_transparency=img_meta.get('has_transparency', False),
+                    file_size=img_meta.get('file_size')
+                )
+                session.add(book_image)
+                image_count += 1
+
+            # Update book's image statistics
+            book = session.query(Book).filter(Book.id == book_id).first()
+            if book:
+                book.image_count = image_count
+                book.has_images = image_count > 0
+
+        # Update the markdown file with absolute paths
+        with open(markdown_path, 'w', encoding='utf-8') as f:
+            f.write(markdown_absolute)
+
+        return image_count, markdown_absolute
+
+    except Exception as e:
+        console.print(f"\n[yellow]Warning:[/yellow] Image extraction failed: {e}")
+        console.print("[yellow]Book added successfully, but without images.[/yellow]")
+        return 0, ""
 
 
 @app.command("add-pdf")
@@ -153,6 +248,21 @@ def add_pdf(
 
                 progress.update(task, completed=True)
 
+                # Step 7: Extract and save images
+                task = progress.add_task("[cyan]Extracting images from PDF...", total=None)
+                image_count, _ = _process_and_save_images(
+                    book_id=book_id,
+                    pdf_path=file_path,
+                    markdown_path=md_filepath,
+                    progress_task_id=task,
+                    progress_obj=progress
+                )
+                progress.update(task, completed=True)
+
+                # Update metadata with image count for display
+                metadata['image_count'] = image_count
+                metadata['has_images'] = image_count > 0
+
             except IntegrityError as e:
                 progress.stop()
                 console.print(f"\n[red]Database error:[/red] {e}")
@@ -198,6 +308,8 @@ def _display_success(
     table.add_row("Pages", str(metadata.get('page_count', 'N/A')))
     table.add_row("Words", f"{metadata.get('word_count', 0):,}")
     table.add_row("Chapters", str(metadata.get('chapter_count', 0)))
+    if metadata.get('image_count', 0) > 0:
+        table.add_row("Images", str(metadata.get('image_count', 0)))
     table.add_row("Markdown", str(md_filepath))
 
     panel = Panel(

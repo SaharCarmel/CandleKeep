@@ -7,7 +7,7 @@ from typing import Optional, List
 import typer
 from rich.console import Console
 
-from ..db.models import Book
+from ..db.models import Book, BookImage
 from ..db.session import get_db_manager
 from ..utils.config import get_config
 
@@ -141,12 +141,62 @@ def _parse_page_ranges(page_str: str) -> List[int]:
     return sorted(pages)
 
 
+def _resolve_printed_to_physical_pages(book_id: int, page_list: List[int], session) -> List[int]:
+    """
+    Attempt to resolve printed page numbers to physical PDF page numbers.
+
+    Strategy:
+    1. Query BookImage table for pages with matching printed_page_number
+    2. If found, map to physical page_number
+    3. If not found, assume page_list contains physical page numbers (fallback)
+
+    Args:
+        book_id: Book ID to query
+        page_list: List of page numbers (potentially printed page numbers)
+        session: Database session
+
+    Returns:
+        List of physical page numbers (PDF indices)
+    """
+    # Query for all BookImage records for this book with printed page numbers
+    images_with_printed = session.query(BookImage).filter(
+        BookImage.book_id == book_id,
+        BookImage.printed_page_number.isnot(None)
+    ).all()
+
+    if not images_with_printed:
+        # No printed page data available, treat as physical pages
+        return page_list
+
+    # Build mapping: printed_page_number -> physical page_number
+    printed_to_physical = {}
+    for img in images_with_printed:
+        if img.printed_page_number not in printed_to_physical:
+            printed_to_physical[img.printed_page_number] = img.page_number
+
+    # Try to resolve each requested page
+    resolved_pages = []
+    for page_num in page_list:
+        if page_num in printed_to_physical:
+            # Found mapping: this is a printed page number
+            resolved_pages.append(printed_to_physical[page_num])
+        else:
+            # No mapping: assume it's already a physical page number
+            resolved_pages.append(page_num)
+
+    return sorted(set(resolved_pages))  # Remove duplicates and sort
+
+
 def _extract_pages_from_markdown(md_path: Path, pages: List[int]) -> str:
     """
     Extract specific pages from a markdown file.
 
     Uses page markers inserted during PDF/markdown processing.
     Returns markdown content for requested pages.
+
+    Note: pymupdf4llm uses 0-based PDF indices in page markers (e.g., "end of page=103"),
+    but our database uses 1-based page numbers (e.g., page_number=104).
+    We must convert: marker_index = page_number - 1
     """
     if not md_path.exists():
         raise FileNotFoundError(f"Markdown file not found: {md_path}")
@@ -167,10 +217,12 @@ def _extract_pages_from_markdown(md_path: Path, pages: List[int]) -> str:
             return ""
 
     # Build a map of page numbers to content positions
-    # Note: "end of page=N" means content BEFORE this marker is page N
+    # Note: pymupdf4llm markers use 0-based PDF indices
+    # "end of page=103" means PDF index 103 (our DB page 104) content ends here
     page_map = {}
     for i, match in enumerate(matches):
-        page_num = int(match.group(1))
+        pdf_index = int(match.group(1))  # 0-based PDF index from marker
+        db_page_num = pdf_index + 1  # Convert to 1-based page number for our DB
 
         # Start position is after previous marker (or start of file for page 0)
         if i == 0:
@@ -181,7 +233,7 @@ def _extract_pages_from_markdown(md_path: Path, pages: List[int]) -> str:
         # End position is at the current marker (before "--- end of page=N ---")
         end_pos = match.start()
 
-        page_map[page_num] = (start_pos, end_pos)
+        page_map[db_page_num] = (start_pos, end_pos)
 
     # Extract requested pages
     result_lines = []
@@ -317,10 +369,14 @@ def get_pages(
                 console.print(f"Error: Book with ID {book_id} not found.")
                 raise typer.Exit(1)
 
+            # Resolve printed page numbers to physical page numbers
+            # This allows users to query by the page number printed in the book
+            resolved_page_list = _resolve_printed_to_physical_pages(book_id, page_list, session)
+
             # Extract pages from markdown file
             md_path = Path(book.markdown_file_path)
             try:
-                content = _extract_pages_from_markdown(md_path, page_list)
+                content = _extract_pages_from_markdown(md_path, resolved_page_list)
 
                 if not content:
                     console.print(f"Warning: No content found for requested pages.")

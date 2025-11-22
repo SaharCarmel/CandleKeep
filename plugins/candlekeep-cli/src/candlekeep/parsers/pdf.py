@@ -9,6 +9,7 @@ import fitz  # PyMuPDF
 import pymupdf4llm
 
 from ..utils.file_utils import parse_filename_metadata
+from ..utils.image_utils import get_absolute_image_path
 
 
 class PDFParser:
@@ -171,18 +172,50 @@ class PDFParser:
 
         return toc_entries
 
-    def convert_to_markdown(self) -> str:
+    def convert_to_markdown(
+        self,
+        extract_images: bool = False,
+        image_path: Optional[Path] = None,
+        dpi: int = 150,
+        size_limit: float = 0.05
+    ) -> str:
         """
         Convert PDF to markdown using pymupdf4llm with page separators.
 
+        Args:
+            extract_images: Whether to extract and save images (default: False)
+            image_path: Directory to save extracted images (required if extract_images=True)
+            dpi: Image resolution in DPI (default: 150)
+            size_limit: Minimum image size as fraction of page area (default: 0.05 = 5%)
+
         Returns:
             Markdown content as string with page markers (--- end of page=N ---)
+
+        Raises:
+            ValueError: If extract_images=True but image_path is None
         """
+        if extract_images and image_path is None:
+            raise ValueError("image_path required when extract_images=True")
+
         try:
-            # Use pymupdf4llm for conversion with page separators
+            # Prepare arguments for pymupdf4llm
+            conversion_args = {
+                "page_separators": True,  # Add page markers for content extraction
+            }
+
+            # Add image extraction parameters if requested
+            if extract_images:
+                conversion_args.update({
+                    "write_images": True,
+                    "image_path": str(image_path),
+                    "dpi": dpi,
+                    "image_size_limit": size_limit,
+                })
+
+            # Use pymupdf4llm for conversion
             md_text = pymupdf4llm.to_markdown(
                 str(self.pdf_path),
-                page_separators=True  # Add page markers for content extraction
+                **conversion_args
             )
             return md_text
         except Exception as e:
@@ -215,6 +248,162 @@ class PDFParser:
 
         first_page = self.doc[0]
         return first_page.get_text()
+
+    @staticmethod
+    def convert_image_paths_to_absolute(
+        markdown_content: str,
+        book_id: int,
+        image_dir: Path
+    ) -> str:
+        """
+        Convert relative image paths in markdown to absolute paths.
+
+        Args:
+            markdown_content: Markdown text with relative image paths
+            book_id: Book ID for generating absolute paths
+            image_dir: Directory where images are stored
+
+        Returns:
+            Markdown with absolute image paths
+
+        Example:
+            Input:  ![](page-1-img-0.png)
+            Output: ![](/Users/user/.candlekeep/images/1/page-1-img-0.png)
+        """
+        # Pattern to match markdown images: ![...](...) or ![](...)
+        # Captures the filename in group 1
+        pattern = r'!\[([^\]]*)\]\(([^)]+)\)'
+
+        def replace_path(match):
+            alt_text = match.group(1)
+            relative_path = match.group(2)
+
+            # Extract just the filename (in case there's a path)
+            filename = Path(relative_path).name
+
+            # Generate absolute path
+            abs_path = get_absolute_image_path(book_id, filename)
+
+            # Return markdown with absolute path
+            return f'![{alt_text}]({abs_path})'
+
+        return re.sub(pattern, replace_path, markdown_content)
+
+    @staticmethod
+    def detect_printed_page_number(page) -> Optional[int]:
+        """
+        Attempt to extract the printed page number from a PDF page.
+
+        This method looks for standalone numbers in the header or footer
+        of the page, which typically indicate the printed page number.
+
+        Args:
+            page: PyMuPDF page object
+
+        Returns:
+            Printed page number as integer, or None if not detectable
+
+        Strategy:
+            1. Check last 5 lines (footer) - most common location
+            2. Check first 5 lines (header)
+            3. Ignore obviously wrong numbers (> 9999, < 1)
+        """
+        text = page.get_text()
+        lines = [line.strip() for line in text.split('\n')]
+
+        # Strategy 1: Check footer (last 5 lines)
+        for line in lines[-5:]:
+            if line.isdigit() and 1 <= len(line) <= 4:
+                num = int(line)
+                if 1 <= num <= 9999:  # Sanity check
+                    return num
+
+        # Strategy 2: Check header (first 5 lines)
+        for line in lines[:5]:
+            if line.isdigit() and 1 <= len(line) <= 4:
+                num = int(line)
+                if 1 <= num <= 9999:
+                    return num
+
+        return None  # Could not detect
+
+    def extract_image_metadata(self) -> List[Dict[str, Any]]:
+        """
+        Extract detailed metadata for all images in the PDF.
+
+        Returns:
+            List of dictionaries containing image metadata:
+            - page_number: Page where image appears
+            - xref: PDF object reference
+            - width: Image width in pixels
+            - height: Image height in pixels
+            - format: Image format (png, jpg, etc.)
+            - colorspace: Color space (RGB, CMYK, Gray, etc.)
+            - has_transparency: Whether image has transparency/alpha channel
+            - file_size: Estimated file size in bytes
+        """
+        images_metadata = []
+
+        # Iterate through all pages
+        for page_num in range(len(self.doc)):
+            page = self.doc[page_num]
+            image_list = page.get_images()
+
+            # Detect printed page number for this page (once per page)
+            printed_page_num = self.detect_printed_page_number(page)
+
+            # Process each image on the page
+            for img_index, img_info in enumerate(image_list):
+                try:
+                    # img_info is a tuple: (xref, smask, width, height, bpc, colorspace, ...)
+                    xref = img_info[0]
+                    smask = img_info[1]  # Soft mask (transparency)
+                    width = img_info[2]
+                    height = img_info[3]
+                    colorspace_int = img_info[5]
+
+                    # Extract the image to get more details
+                    base_image = self.doc.extract_image(xref)
+
+                    if base_image:
+                        # Map colorspace integer to string
+                        colorspace_map = {
+                            1: "Gray",
+                            2: "Gray",  # GrayA (with alpha)
+                            3: "RGB",
+                            4: "RGBA",
+                            5: "CMYK",
+                            6: "CMYKA",
+                        }
+                        colorspace = colorspace_map.get(colorspace_int, f"Unknown({colorspace_int})")
+
+                        # Get image format
+                        image_format = base_image.get("ext", "png")
+
+                        # Check for transparency
+                        has_transparency = smask > 0 or colorspace in ["RGBA", "CMYKA", "GrayA"]
+
+                        # Estimate file size (actual size of extracted image data)
+                        file_size = len(base_image.get("image", b""))
+
+                        images_metadata.append({
+                            "page_number": page_num + 1,  # Convert to 1-based page numbering
+                            "printed_page_number": printed_page_num,  # Detected printed number (may be None)
+                            "xref": xref,
+                            "width": width,
+                            "height": height,
+                            "format": image_format,
+                            "colorspace": colorspace,
+                            "has_transparency": has_transparency,
+                            "file_size": file_size,
+                        })
+
+                except Exception as e:
+                    # Log error but continue processing other images
+                    print(f"Warning: Failed to extract metadata for image {img_index} on page {page_num + 1}: {e}")
+                    continue
+
+        return images_metadata
 
 
 def parse_pdf(

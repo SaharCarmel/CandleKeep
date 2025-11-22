@@ -13,6 +13,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     JSON,
+    Boolean,
 )
 from sqlalchemy.orm import DeclarativeBase, relationship
 import enum
@@ -88,8 +89,13 @@ class Book(Base):
     publication_year = Column(Integer)
     language = Column(String(10), default="en")
 
+    # Image metrics
+    image_count = Column(Integer, default=0, nullable=False)
+    has_images = Column(Boolean, default=False, nullable=False, index=True)
+
     # Relationships
     notes = relationship("BookNote", back_populates="book", cascade="all, delete-orphan")
+    images = relationship("BookImage", back_populates="book", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Book(id={self.id}, title='{self.title}', author='{self.author}')>"
@@ -121,3 +127,45 @@ class BookNote(Base):
 
     def __repr__(self):
         return f"<BookNote(id={self.id}, book_id={self.book_id}, type={self.note_type})>"
+
+
+class BookImage(Base):
+    """Book image metadata - stores information about images extracted from PDFs."""
+
+    __tablename__ = "book_images"
+
+    # Primary key
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    # Foreign key
+    book_id = Column(Integer, ForeignKey("books.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    # Image location
+    page_number = Column(Integer, nullable=False)  # PDF physical page index (0-based, canonical)
+    printed_page_number = Column(Integer, nullable=True)  # Number printed on actual page (user-friendly)
+    xref = Column(Integer, nullable=False)  # PDF object reference for potential deduplication
+    file_path = Column(String(1000), nullable=False)  # Path to extracted image file
+
+    # Image dimensions
+    width = Column(Integer, nullable=False)
+    height = Column(Integer, nullable=False)
+
+    # Image properties
+    format = Column(String(10), nullable=False)  # png, jpg, etc.
+    colorspace = Column(String(20))  # RGB, CMYK, Gray, etc.
+    has_transparency = Column(Boolean, default=False)
+    file_size = Column(Integer)  # Size in bytes
+
+    # Metadata
+    created_date = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    # Relationships
+    book = relationship("Book", back_populates="images")
+
+    # Indexes
+    __table_args__ = (
+        Index("idx_book_page", "book_id", "page_number"),
+    )
+
+    def __repr__(self):
+        return f"<BookImage(id={self.id}, book_id={self.book_id}, page={self.page_number}, format={self.format})>"
